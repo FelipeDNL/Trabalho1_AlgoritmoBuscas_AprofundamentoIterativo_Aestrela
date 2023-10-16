@@ -11,12 +11,29 @@ mapa = [
     [9, 0, 19, 29, 0, 39, 49, 0, 59, 69, 0, 79, 89, 0, 99],
     [10, 0, 20, 30, 0, 40, 50, 0, 60, 70, 0, 80, 90, 0, 100],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101],
-    [102, 103, 104, 105, 106, "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"]
+    [102, 103, 104, 105, 106, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
-mapa[11][14] = 'X'
-mapa[12][0] = 'R1'
-mapa[12][1] = 'R2'
-mapa[12][2] = 'R3'
-mapa[12][3] = 'R4'
-mapa[12][5] = 'R5'
+r1 = mapa[12][0]
+r2 = mapa[12][1]
+r3 = mapa[12][2]
+r4 = mapa[12][3]
+r5 = mapa[12][4]
+resultado = mapa[11][14]
+
+# Itera pelas linhas da matriz
+for i in range(len(mapa)):
+    # Itera pelas colunas de cada linha
+    for j in range(len(mapa[0])):
+        # Verifica onde se encontram os robôs
+        if mapa[i][j] == 102:
+            r1 = mapa[i][j]
+        if mapa[i][j] == 103:
+            r2 = mapa[i][j]
+        if mapa[i][j] == 104:
+            r3 = mapa[i][j]
+        if mapa[i][j] == 105:
+            r4 = mapa[i][j]
+        if mapa[i][j] == 106:
+            r5 = mapa[i][j]
+
