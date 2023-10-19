@@ -13,9 +13,17 @@ class Robo:
             self.posicao = destino
             self.acoes_executadas.extend(rota)
 
+            # Armazene a rota original
+            self.rota_original = rota
+
     def executar_acao(self, acao):
         self.acoes_executadas.append(acao)
 
+    def retornar_ao_ponto_inicial(self, deposito):
+        if hasattr(self, 'rota_original'):
+            rota_retorno = list(reversed(self.rota_original))
+            for destino in rota_retorno:
+                self.mover_para(destino, deposito)
 
 class Node:
     def __init__(self, position, parent=None, depth=0):
