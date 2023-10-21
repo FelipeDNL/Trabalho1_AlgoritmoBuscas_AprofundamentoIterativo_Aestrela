@@ -40,8 +40,9 @@ class Node:
         return list(reversed(path))
 
 
+# Função aprofundamento_iterativo implementa busca em profundidade iterativa
 def aprofundamento_iterativo(deposito, start, end):
-    def dfs_limitado(node, depth, limit):
+    def dfs_limitado(node, depth, limit, visited):
         if depth > limit:
             return None
 
@@ -53,17 +54,24 @@ def aprofundamento_iterativo(deposito, start, end):
                 new_x, new_y = node.position[0] + move[0], node.position[1] + move[1]
                 if 0 <= new_x < len(deposito) and 0 <= new_y < len(deposito[0]) and deposito[new_x][new_y] == 0:
                     child_node = Node((new_x, new_y), parent=node, depth=depth + 1)
-                    result = dfs_limitado(child_node, depth + 1, limit)
-                    if result:
-                        result.append(node.position)
-                        return result
+                    # Verifique se o nó já foi visitado
+                    if child_node.position not in visited:
+                        visited.add(child_node.position)
+                        result = dfs_limitado(child_node, depth + 1, limit, visited)
+                        if result:
+                            result.append(node.position)
+                            return result
 
+    # Possíveis movimentos no depósito (cima, baixo, esquerda, direita)
     moves = [(1, 0), (-1, 0), (0, 1), (0, -1)]
     start_node = Node(start)
 
+    visited = set()  # Conjunto para manter o controle dos nós visitados
+    visited.add(start_node.position)
+
     for limit in range(1, len(deposito) * len(deposito[0])):
         print(f"Nível da árvore: {limit}")
-        result = dfs_limitado(start_node, 0, limit)
+        result = dfs_limitado(start_node, 0, limit, visited)
         if result:
             return list(reversed(result))
 
@@ -145,20 +153,20 @@ def mover_robo_para_estante_e_retornar(robo, estante, deposito):
 
 # Defina o depósito
 deposito = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 0, 11, 21, 0, 31, 41, 0, 51, 61, 0, 71, 81, 0, 91],
-    [2, 0, 12, 22, 0, 32, 42, 0, 52, 62, 0, 72, 82, 0, 92],
-    [3, 0, 13, 23, 0, 33, 43, 0, 53, 63, 0, 72, 82, 0, 92],
-    [4, 0, 14, 24, 0, 34, 44, 0, 54, 64, 0, 73, 83, 0, 93],
-    [5, 0, 15, 25, 0, 35, 45, 0, 55, 65, 0, 75, 85, 0, 95],
-    [6, 0, 16, 26, 0, 36, 46, 0, 56, 66, 0, 76, 86, 0, 96],
-    [7, 0, 17, 27, 0, 37, 47, 0, 57, 67, 0, 77, 87, 0, 97],
-    [8, 0, 18, 28, 0, 38, 48, 0, 58, 68, 0, 78, 88, 0, 98],
-    [9, 0, 19, 29, 0, 39, 49, 0, 59, 69, 0, 79, 89, 0, 99],
-    [10, 0, 20, 30, 0, 40, 50, 0, 60, 70, 0, 80, 90, 0, 100],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
-    [-3, -3, -3, -3, -3, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]
-]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 11, 21, 0, 31, 41, 0, 51, 61, 0, 71, 81, 0, 91],
+        [2, 0, 12, 22, 0, 32, 42, 0, 52, 62, 0, 72, 82, 0, 92],
+        [3, 0, 13, 23, 0, 33, 43, 0, 53, 63, 0, 72, 82, 0, 92],
+        [4, 0, 14, 24, 0, 34, 44, 0, 54, 64, 0, 73, 83, 0, 93],
+        [5, 0, 15, 25, 0, 35, 45, 0, 55, 65, 0, 75, 85, 0, 95],
+        [6, 0, 16, 26, 0, 36, 46, 0, 56, 66, 0, 76, 86, 0, 96],
+        [7, 0, 17, 27, 0, 37, 47, 0, 57, 67, 0, 77, 87, 0, 97],
+        [8, 0, 18, 28, 0, 38, 48, 0, 58, 68, 0, 78, 88, 0, 98],
+        [9, 0, 19, 29, 0, 39, 49, 0, 59, 69, 0, 79, 89, 0, 99],
+        [10, 0, 20, 30, 0, 40, 50, 0, 60, 70, 0, 80, 90, 0, 100],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101],
+        [102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116]
+    ]
 
 # Defina os robôs
 robos = [Robo("R1", (12, 0)), Robo("R2", (12, 1)), Robo("R3", (12, 2)), Robo("R4", (12, 3)), Robo("R5", (12, 4))]
