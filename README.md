@@ -1,3 +1,16 @@
+# IA - Algoritmos de Busca
+Imagine uma ferramenta online que ajuda você a encontrar o caminho mais eficiente em um labirinto, planejar uma viagem com múltiplos destinos ou até mesmo sugerir as melhores opções de rotas para entregas. Este projeto utiliza duas técnicas poderosas chamadas "Aprofundamento Iterativo" e "A* (A Estrela)" para tornar essas tarefas mais simples e eficazes.
+
+Em resumo, este projeto combina a potência dos algoritmos de busca com a facilidade de uso de uma aplicação web. Ele pode ser aplicado em uma variedade de situações, desde planejar férias até otimizar operações logísticas. Tudo o que você precisa fazer é definir o seu problema, e o sistema fará o resto, encontrando a melhor solução para você.
+
+## A* (A Estrela)
+O algoritmo A* é como um navegador GPS inteligente. Ele usa uma heurística para estimar quão longe estamos do nosso destino e, em seguida, prioriza as ações que parecem mais promissoras. Isso ajuda a encontrar a rota mais rápida e eficiente, economizando tempo e recursos.
+
+## Aprofundamento Iterativo
+O aprofundamento iterativo é como um explorador que mergulha cada vez mais fundo no problema até encontrar a solução. Funciona como uma busca gradual e persistente. Se a solução não for encontrada em uma tentativa, o sistema aprofunda a pesquisa, explorando novas possibilidades, tornando-o altamente eficiente para encontrar soluções mesmo em problemas desafiadores.
+
+# Implementação
+
 Centros de distribuição precisam de muita organização e sistemas informatizados para localização e despacho das mercadorias. A figura 1 apresenta o mapa de um depósito fictício de 185m², com as seguintes características:
 - Cada célula da matriz representa o espaço de um metro quadrado.
 - As células numeradas indicam a existência de uma estante naquela localização e o número representa o seu código identificador.

@@ -1,0 +1,180 @@
+/* header */
+
+header {
+    align-items: center;
+    background: transparent;
+    display: flex;
+    flex-direction: row;
+    padding: 30px;
+    width: 100%;
+    z-index: 1024;
+}
+
+header .header-logo,
+header .alunos,
+header .menu {
+    flex: 1;
+    position: relative;
+}
+
+header .header-logo img {
+    height: 60px;
+    object-fit: contain;
+}
+
+header .menu .navbar-nav{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+header .alunos {
+    text-align: right;
+}
+
+header .alunos .alunos-botao {
+    width: 150px;
+    text-align: center;
+}
+
+header .alunos .alunos-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #34a344;
+    color: #fff;
+    border-radius: 6px;
+    padding: 8px 16px;
+    position: absolute;
+    z-index: 1;
+    top: 50px;
+    right: 0;
+    margin-left: -80px;
+    text-align: right;
+}
+
+header .alunos .alunos-text::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 90%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent #34a344 transparent;
+}
+
+header .alunos .fundo-verde {
+    background-color: #34a344;
+    border-color: #34a344;
+    color: #fff;
+    transition: all 1s ease;
+}
+
+header .alunos .show {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+}
+
+/* main */
+
+main {
+    position: relative;
+    padding: 0px 40px;
+}
+
+main .sobre {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-top: 20px;
+    gap: 40px;
+}
+
+main .sobre h4 {
+    color: #34a344;
+}
+
+main .sobre .st-1,
+main .sobre .st-2 {
+    flex: 1;
+}
+
+main .scripts h2 {
+    background-color: #34a344;
+    margin: 20px 0px;
+    padding: 10px 20px;
+    color: #fff;
+    text-align: center;
+    border-radius: 10px;
+}
+
+main .scripts .script-buttons {
+    text-align: center;
+    padding: 20px 0px;
+}
+
+main .scripts .script-buttons .btn {
+    width: 250px;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    background-color: #34a344;
+    border: 1px solid #000;
+    color: #fff;
+}
+
+main .scripts .script-buttons .btn:hover {
+    background-color: #000;
+}
+
+footer {
+    text-align: center;
+    padding: 0px 20px;
+    word-wrap: break-word;
+}
+
+/* ANIMATIONS */
+
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;} 
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}
+
+@-webkit-keyframes fadeOut {
+    from {opacity: 1;} 
+    to {opacity: 0;}
+}
+
+@keyframes fadeOut {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+/* RESPONSIVO */
+
+@media only screen and (max-width: 900px) {
+    header .header-logo img {
+        height: 40px;
+    }
+    header .alunos .alunos-botao {
+        width: 100px;
+    }
+    main {
+        padding: 0px 20px;
+    }
+    main .sobre {
+        flex-direction: column;
+        gap: 0px;
+    }
+    main .sobre .st-2 p {
+        padding: 20px;
+        margin-top: 10px;
+        background-color: #34a34420;
+        border-radius: 10px;
+    }
+}
