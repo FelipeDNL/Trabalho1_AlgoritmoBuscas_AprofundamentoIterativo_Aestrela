@@ -7,7 +7,6 @@ class Robo
 
     public function __construct($nome, $posicaoInicial)
     {
-        // Inicializa um objeto Robo com um nome e uma posição inicial
         $this->nome = $nome;
         $this->posicao = $posicaoInicial;
         $this->acoesExecutadas = array();
@@ -15,8 +14,7 @@ class Robo
 
     public function moverPara($destino, $deposito, $robos)
     {
-        // Move o robô para o destino no depósito usando o algoritmo A*
-        $rota = astar($deposito, $this->posicao, $destino);
+        $rota = AStar::findPath($deposito, $this->posicao, $destino);
 
         if ($rota) {
             foreach ($rota as $acao) {
@@ -24,23 +22,20 @@ class Robo
             }
             $this->posicao = $destino;
             $this->acoesExecutadas = array_merge($this->acoesExecutadas, $rota);
-            imprimirDeposito($deposito, $robos);
+            Deposito::imprimirDeposito($deposito, $robos);
         }
     }
 
-    // Método para executar uma ação e adicioná-la à lista de ações executadas
     public function executarAcao($acao)
     {
         $this->acoesExecutadas[] = $acao;
     }
 
-    // Setter para $posicao
     public function setPosicao($posicao)
     {
         $this->posicao = $posicao;
     }
 
-    // Getter para $posicao
     public function getPosicao()
     {
         return $this->posicao;
@@ -58,28 +53,107 @@ class Estante
         $this->posicao = $posicao;
     }
 
-    // Setter para $codigo
     public function setCodigo($codigo)
     {
         $this->codigo = $codigo;
     }
 
-    // Getter para $codigo
     public function getCodigo()
     {
         return $this->codigo;
     }
 
-    // Setter para $posicao
     public function setPosicao($posicao)
     {
         $this->posicao = $posicao;
     }
 
-    // Getter para $posicao
     public function getPosicao()
     {
         return $this->posicao;
+    }
+}
+
+class AStar
+{
+    public static function findPath($deposito, $start, $goal)
+    {
+        $movimentos = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        $direcoes = ["Direita", "Esquerda", "Baixo", "Cima"];
+        $openSet = [];
+        $cameFrom = [];
+        $gScore = [];
+        $fScore = [];
+        $gScore[$start] = 0;
+        $fScore[$start] = self::heuristica($start, $goal);
+        $openSet[] = $start;
+
+        while (!empty($openSet)) {
+            $current = self::getLowestFScoreNode($openSet, $fScore);
+            if ($current == $goal) {
+                return self::reconstructPath($cameFrom, $current);
+            }
+
+            $key = array_search($current, $openSet);
+            unset($openSet[$key]);
+
+            foreach ($movimentos as $movimento) {
+                $neighbor = [$current[0] + $movimento[0], $current[1] + $movimento[1]];
+
+                if (self::isValidMove($neighbor, $deposito)) {
+                    $tentativeGScore = $gScore[$current] + 1;
+
+                    if (!array_key_exists($neighbor, $gScore) || $tentativeGScore < $gScore[$neighbor]) {
+                        $cameFrom[$neighbor] = $current;
+                        $gScore[$neighbor] = $tentativeGScore;
+                        $fScore[$neighbor] = $gScore[$neighbor] + self::heuristica($neighbor, $goal);
+
+                        if (!in_array($neighbor, $openSet)) {
+                            $openSet[] = $neighbor;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static function getLowestFScoreNode($openSet, $fScore)
+    {
+        $lowestF = PHP_INT_MAX;
+        $lowestNode = null;
+
+        foreach ($openSet as $node) {
+            if ($fScore[$node] < $lowestF) {
+                $lowestF = $fScore[$node];
+                $lowestNode = $node;
+            }
+        }
+
+        return $lowestNode;
+    }
+
+    private static function reconstructPath($cameFrom, $current)
+    {
+        $totalPath = [$current];
+        while (array_key_exists($current, $cameFrom)) {
+            $current = $cameFrom[$current];
+            array_unshift($totalPath, $current);
+        }
+        return $totalPath;
+    }
+
+    private static function isValidMove($position, $deposito)
+    {
+        $row = $position[0];
+        $col = $position[1];
+        return $row >= 0 && $row < count($deposito) && $col >= 0 && $col < count($deposito[0]) && $deposito[$row][$col] === 0;
+    }
+
+    private static function heuristica($ponto1, $ponto2)
+    {
+        return abs($ponto1[0] - $ponto2[0]) + abs($ponto1[1] - $ponto2[1]);
     }
 }
 
@@ -100,135 +174,91 @@ class Node
         $this->f = 0;
     }
 
-    public function __lt($other)
-    {
-        return ($this->g + $this->h) < ($other->g + $other->h);
-    }
-
     public function setPosition($value)
     {
         $this->position = $value;
-    } // Define a posição
+    }
+
     public function setParent($value)
     {
         $this->parent = $value;
-    } // Define o parente
+    }
+
     public function setG($value)
     {
         $this->g = $value;
-    } // Define o g
+    }
+
     public function setH($value)
     {
         $this->h = $value;
-    } // Define o h
+    }
+
     public function setF($value)
     {
         $this->f = $value;
-    } // Define o f
+    }
 
     public function getPosition()
     {
         return $this->position;
-    } // Retorna a posição
+    }
+
     public function getParent()
     {
         return $this->parent;
-    } // Retorna o parent
+    }
+
     public function getG()
     {
         return $this->g;
-    } // Retorna o g
+    }
+
     public function getH()
     {
         return $this->h;
-    } // Retorna o h
+    }
+
     public function getF()
     {
         return $this->f;
-    } // Retorna o f
+    }
 }
 
-function heuristica($ponto1, $ponto2)
+class Deposito
 {
-    // Função heurística que estima o custo restante (heurístico) entre dois pontos
-    return abs($ponto1[0] - $ponto2[0]) + abs($ponto1[1] - $ponto2[1]);
-}
+    public static function imprimirDeposito($deposito, $robos)
+    {
+        $depositoComRobos = array_map(function ($row) {
+            return $row;
+        }, $deposito);
 
-function astar($deposito, $start, $end)
-{
-    // Função A* que encontra o caminho mais curto de $start para $end em um depósito
+        foreach ($robos as $robo) {
+            $posicaoRobo = $robo->getPosicao();
+            $depositoComRobos[$posicaoRobo[0]][$posicaoRobo[1]] = -3;
+        }
 
-    $movimentos = [[0, 1], [0, -1], [1, 0], [-1, 0]];  // Movimentos possíveis: direita, esquerda, baixo, cima
-    $direcoes = ["Direita", "Esquerda", "Baixo", "Cima"];  // Direções correspondentes
-
-    $open_set = [];  // Lista de nós a serem explorados
-    $closed_set = [];  // Conjunto de nós já explorados
-
-    $start_node = new Node($start); // Nó inicial
-    $start_node->setG($start_node->setH($start_node->setF(0))); // Inicializa os valores de custo g, heurístico h e custo total f
-    $open_set[] = $start_node; // Adiciona o nó inicial à lista de nós abertos
-
-    while (!empty($open_set)) {
-        usort($open_set, function ($a, $b) {
-            return $a->getF() - $b->getF();
-        });
-        $atual = array_shift($open_set); // Remove o nó com menor custo f da lista
-        $closed_set[] = $atual->getPosition(); // Adiciona o nó atual ao conjunto de nós fechados
-
-        if ($atual->getPosition() != $end) {
-            $vizinhos = [];
-            foreach ($movimentos as $movimento) {
-                $vizinho_posicao = [$atual->getPosition()[0] + $movimento[0], $atual->getPosition()[1] + $movimento[1]];
-
-                if (
-                    isset($vizinho_posicao[0]) && isset($vizinho_posicao[1]) &&
-                    $vizinho_posicao[0] >= 0 && $vizinho_posicao[0] < count($deposito) &&
-                    $vizinho_posicao[1] >= 0 && $vizinho_posicao[1] < count($deposito[0]) &&
-                    $deposito[$vizinho_posicao[0]][$vizinho_posicao[1]] == 0
-                ) {
-                    $vizinho = new Node($vizinho_posicao, $atual);  // Cria um novo nó vizinho
-                    $vizinho->setG($atual->getG() + 1);  // Custo g é a distância até o vizinho
-                    $vizinho->setH(heuristica($vizinho->getPosition(), $end));  // Custo heurístico h estimado
-                    $vizinho->setF($vizinho->getG() + $vizinho->getH());  // Custo total f
-
-                    if (!in_array($vizinho->getPosition(), $closed_set, true)) {
-                        $vizinhos[] = $vizinho;
-                    }
+        foreach ($depositoComRobos as $row) {
+            foreach ($row as $cell) {
+                if ($cell == 0) {
+                    echo "-- ";
+                } elseif ($cell == -1) {
+                    echo "XX ";
+                } elseif ($cell == -2) {
+                    echo "   ";
+                } elseif ($cell == -3) {
+                    echo "RR ";
+                } elseif ($cell > 0 && $cell < 10) {
+                    echo "0" . $cell . " ";
+                } else {
+                    echo $cell . " ";
                 }
             }
-
-            foreach ($vizinhos as $vizinho) {
-                if (!in_array($vizinho, $open_set, true)) {
-                    $open_set[] = $vizinho;  // Adiciona vizinhos à lista de nós abertos se ainda não estiverem lá
-                }
-            }
+            echo PHP_EOL;
         }
     }
-
-    $caminho = [];  // Lista para armazenar o caminho
-    $direcoes_caminho = [];  // Lista para rastrear direções
-
-    while ($atual->getParent() !== null) {
-        $caminho[] = $atual;  // Adiciona o nó atual ao caminho
-        $atual = $atual->getParent();  // Move-se para o nó pai
-    }
-
-    $direcoes_caminho = [];
-    for ($i = count($caminho) - 1; $i > 0; $i--) {
-        // Calcula as direções entre os nós no caminho
-        $movimento = [
-            $caminho[$i]->getPosition()[0] - $caminho[$i - 1]->getPosition()[0],
-            $caminho[$i]->getPosition()[1] - $caminho[$i - 1]->getPosition()[1]
-        ];
-        $direcao_index = array_search($movimento, $movimentos, true);
-        $direcoes_caminho[] = $direcoes[$direcao_index];
-    }
-
-    array_reverse($direcoes_caminho);  // Inverte a lista de direções
-    return [array_reverse($caminho), $direcoes_caminho];  // Retorna o caminho reverso e as direções
 }
 
-// Função q encontra a posição de uma estante no depósito com base no seu código
 function encontrarPosicaoEstantePorCodigo($codigo_estante, $deposito)
 {
     for ($row = 0; $row < count($deposito); $row++) {
@@ -241,7 +271,6 @@ function encontrarPosicaoEstantePorCodigo($codigo_estante, $deposito)
     return null;
 }
 
-// Encontra o robô mais próximo de uma determinada estante
 function encontrarRoboMaisProximo($robos, $estante)
 {
     $distanciaEntrePontos = function ($ponto1, $ponto2) {
@@ -262,88 +291,46 @@ function encontrarRoboMaisProximo($robos, $estante)
     return $robo_mais_proximo;
 }
 
-
-function imprimirDeposito($deposito, $robos)
-{
-    $depositoComRobos = array_map(function ($row) {
-        return $row;
-    }, $deposito);
-
-    foreach ($robos as $robo) {
-        $posicaoRobo = $robo->getPosicao();
-        $depositoComRobos[$posicaoRobo[0]][$posicaoRobo[1]] = -3;
-    }
-
-    foreach ($depositoComRobos as $row) {
-        foreach ($row as $cell) {
-            if ($cell == 0) {
-                echo "-- ";
-            } elseif ($cell == -1) {
-                echo "XX ";
-            } elseif ($cell == -2) {
-                echo "   ";
-            } elseif ($cell == -3) {
-                echo "RR ";
-            } elseif ($cell > 0 && $cell < 10) {
-                echo "0" . $cell . " ";
-            } else {
-                echo $cell . " ";
-            }
-        }
-        echo PHP_EOL;
-    }
-}
-
-
 function moverRoboParaEstanteERetornar($robo, $estante, $deposito, $robos)
 {
-    list($rotaEstanteX, $direcoesEstanteX) = astar($deposito, $robo->getPosicao(), $estante);
+    list($rotaEstanteX, $direcoesEstanteX) = AStar::findPath($deposito, $robo->getPosicao(), $estante);
 
     if ($rotaEstanteX) {
-        $direcaoAnterior = "Desconhecida";  // Inicialize a direção do primeiro movimento como "Desconhecida"
+        $direcaoAnterior = "Desconhecida";
 
         for ($i = 0; $i < count($direcoesEstanteX); $i++) {
             $direcaoAtual = $direcoesEstanteX[$i];
 
-            // Se a direção atual não for a mesma que a anterior, execute a ação
             if ($direcaoAtual !== $direcaoAnterior) {
                 $robo->executarAcao($direcaoAtual);
             }
 
             $direcaoAnterior = $direcaoAtual;
 
-            // Atualize a posição do robô no depósito
             $deposito[$robo->getPosicao()[0]][$robo->getPosicao()[1]] = 0;
-            $robo->moverPara($rotaEstanteX[$i]->getPosition(), $deposito, $robos);
+            $robo->moverPara($rotaEstanteX[$i], $deposito, $robos);
             $deposito[$robo->getPosicao()[0]][$robo->getPosicao()[1]] = -3;
         }
 
-        // Retornar à estante
-        list($rotaRetorno, $direcoesRetorno) = astar($deposito, $robo->getPosicao(), $estante);
+        list($rotaRetorno, $direcoesRetorno) = AStar::findPath($deposito, $robo->getPosicao(), $estante);
 
         for ($i = 0; $i < count($direcoesRetorno); $i++) {
             $direcaoAtual = $direcoesRetorno[$i];
 
-            // Se a direção atual não for a mesma que a anterior, execute a ação
             if ($direcaoAtual !== $direcaoAnterior) {
                 $robo->executarAcao($direcaoAtual);
             }
 
             $direcaoAnterior = $direcaoAtual;
 
-            // Atualize a posição do robô no depósito
             $deposito[$robo->getPosicao()[0]][$robo->getPosicao()[1]] = 0;
-            $robo->moverPara($rotaRetorno[$i]->getPosition(), $deposito, $robos);
+            $robo->moverPara($rotaRetorno[$i], $deposito, $robos);
             $deposito[$robo->getPosicao()[0]][$robo->getPosicao()[1]] = -3;
         }
-
-        // Exiba todas as ações do robô
-        //echo "Ações do Robô " . $robo->getNome() . ": " . implode(", ", $robo->getAcoesExecutadas()) . PHP_EOL;
     } else {
         echo "Não foi possível encontrar um caminho para a estante." . PHP_EOL;
     }
 }
-
 
 $deposito = array(
     array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -364,7 +351,8 @@ $deposito = array(
 $robos = array(
     new Robo("R1", array(12, 0)),
     new Robo("R2", array(12, 1)),
-    new Robo("R3", array(12, 2)),
+    new Robo("R3", array(
+12, 2)),
     new Robo("R4", array(12, 3)),
     new Robo("R5", array(12, 4))
 );
