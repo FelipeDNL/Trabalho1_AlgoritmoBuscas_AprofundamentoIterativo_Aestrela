@@ -114,17 +114,83 @@ main .scripts .script-buttons {
     padding: 20px 0px;
 }
 
-main .scripts .script-buttons .btn {
+.script-buttons .btn {
     width: 250px;
     padding: 10px 20px;
-    margin-bottom: 10px;
     background-color: #34a344;
     border: 1px solid #000;
     color: #fff;
 }
 
-main .scripts .script-buttons .btn:hover {
+.script-buttons .btn:hover {
     background-color: #000;
+    color: #fff;
+}
+
+main .implementacao {
+    display: flex;
+    align-items: center;
+}
+
+main .insercao {
+    flex: 4;
+    align-items: center;
+    justify-content: start;
+}
+
+main .algoritmos {
+    flex: 5;
+    padding: 30px;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+main .algoritmos .estoque .row {
+    border-bottom: 1px solid #000;
+}
+
+main .algoritmos .estoque .row:first-child {
+    border-top: 1px solid #000;
+}
+
+main .algoritmos .estoque .column:first-child {
+    border-left: 1px solid #000;
+}
+
+main .algoritmos .estoque .column {
+    border-right: 1px solid #000;
+    line-height: 40px;
+    text-align: center;
+    width: 50px;
+    height: 40px;
+}
+
+main .algoritmos .estoque .column.bn {
+    border: 0px;
+}
+
+main .algoritmos .estoque .column.bn:last-child {
+    border-right: 1px solid #000;
+}
+
+main .implementacao #cod_estante {
+    margin-bottom: 20px;
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+main .implementacao .resposta {
+    width: 640px;
+    padding: 20px;
+    border: 1px solid #000;
+    border-radius: 10px;
+    margin-top: 20px;
+    height: 300px;
+    overflow: scroll;
+    position: relative;
 }
 
 footer {

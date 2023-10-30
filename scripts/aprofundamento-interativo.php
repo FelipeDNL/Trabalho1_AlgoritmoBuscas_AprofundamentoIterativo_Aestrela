@@ -16,7 +16,7 @@ class Robo
     public function moverPara($destino, $deposito, $robos)
     {
         // Move o robô para o destino no depósito usando o algoritmo A*
-        $rota = astar($deposito, $this->posicao, $destino);
+        $rota = aprofundamentoIterativo($deposito, $this->posicao, $destino);
 
         if ($rota) {
             foreach ($rota as $acao) {
@@ -166,79 +166,53 @@ function heuristica($ponto1, $ponto2)
     return abs($ponto1[0] - $ponto2[0]) + abs($ponto1[1] - $ponto2[1]);
 }
 
-function astar($deposito, $start, $end)
+function aprofundamentoIterativo($deposito, $start, $end)
 {
-    // Função A* que encontra o caminho mais curto de $start para $end em um depósito
+    $moves = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
-    $movimentos = [[0, 1], [0, -1], [1, 0], [-1, 0]];  // Movimentos possíveis: direita, esquerda, baixo, cima
-    $direcoes = ["Direita", "Esquerda", "Baixo", "Cima"];  // Direções correspondentes
+    $dfsLimitado = function ($node, $depth, $limit) use ($deposito, $end, $moves, &$dfsLimitado) {
+        if ($depth > $limit) {
+            return null;
+        }
 
-    $open_set = [];  // Lista de nós a serem explorados
-    $closed_set = [];  // Conjunto de nós já explorados
+        if ($node->getPosition() === $end) {
+            return [$node->getPosition()];
+        }
 
-    $start_node = new Node($start); // Nó inicial
-    $start_node->setG($start_node->setH($start_node->setF(0))); // Inicializa os valores de custo g, heurístico h e custo total f
-    $open_set[] = $start_node; // Adiciona o nó inicial à lista de nós abertos
-
-    while (!empty($open_set)) {
-        usort($open_set, function ($a, $b) {
-            return $a->getF() - $b->getF();
-        });
-        $atual = array_shift($open_set); // Remove o nó com menor custo f da lista
-        $closed_set[] = $atual->getPosition(); // Adiciona o nó atual ao conjunto de nós fechados
-
-        if ($atual->getPosition() != $end) {
-            $vizinhos = [];
-            foreach ($movimentos as $movimento) {
-                $vizinho_posicao = [$atual->getPosition()[0] + $movimento[0], $atual->getPosition()[1] + $movimento[1]];
+        if ($depth < $limit) {
+            foreach ($moves as $move) {
+                $newX = $node->getPosition()[0] + $move[0];
+                $newY = $node->getPosition()[1] + $move[1];
 
                 if (
-                    isset($vizinho_posicao[0]) && isset($vizinho_posicao[1]) &&
-                    $vizinho_posicao[0] >= 0 && $vizinho_posicao[0] < count($deposito) &&
-                    $vizinho_posicao[1] >= 0 && $vizinho_posicao[1] < count($deposito[0]) &&
-                    $deposito[$vizinho_posicao[0]][$vizinho_posicao[1]] == 0
+                    $newX >= 0 && $newX < count($deposito) &&
+                    $newY >= 0 && $newY < count($deposito[0]) &&
+                    $deposito[$newX][$newY] == 0
                 ) {
-                    $vizinho = new Node($vizinho_posicao, $atual);  // Cria um novo nó vizinho
-                    $vizinho->setG($atual->getG() + 1);  // Custo g é a distância até o vizinho
-                    $vizinho->setH(heuristica($vizinho->getPosition(), $end));  // Custo heurístico h estimado
-                    $vizinho->setF($vizinho->getG() + $vizinho->getH());  // Custo total f
-
-                    if (!in_array($vizinho->getPosition(), $closed_set, true)) {
-                        $vizinhos[] = $vizinho;
+                    $childNode = new Node([$newX, $newY], $node, $depth + 1);
+                    $result = $dfsLimitado($childNode, $depth + 1, $limit);
+                    if ($result) {
+                        $result[] = $node->getPosition();
+                        return $result;
                     }
                 }
             }
+        }
+    };
 
-            foreach ($vizinhos as $vizinho) {
-                if (!in_array($vizinho, $open_set, true)) {
-                    $open_set[] = $vizinho;  // Adiciona vizinhos à lista de nós abertos se ainda não estiverem lá
-                }
-            }
+    $startNode = new Node($start);
+
+    for ($limit = 1; $limit < count($deposito) * count($deposito[0]); $limit++) {
+        echo "Nível da árvore: " . $limit . PHP_EOL;
+        $result = $dfsLimitado($startNode, 0, $limit);
+        if ($result) {
+            return array_reverse($result);
         }
     }
 
-    $caminho = [];  // Lista para armazenar o caminho
-    $direcoes_caminho = [];  // Lista para rastrear direções
-
-    while ($atual->getParent() !== null) {
-        $caminho[] = $atual;  // Adiciona o nó atual ao caminho
-        $atual = $atual->getParent();  // Move-se para o nó pai
-    }
-
-    $direcoes_caminho = [];
-    for ($i = count($caminho) - 1; $i > 0; $i--) {
-        // Calcula as direções entre os nós no caminho
-        $movimento = [
-            $caminho[$i]->getPosition()[0] - $caminho[$i - 1]->getPosition()[0],
-            $caminho[$i]->getPosition()[1] - $caminho[$i - 1]->getPosition()[1]
-        ];
-        $direcao_index = array_search($movimento, $movimentos, true);
-        $direcoes_caminho[] = $direcoes[$direcao_index];
-    }
-
-    array_reverse($direcoes_caminho);  // Inverte a lista de direções
-    return [array_reverse($caminho), $direcoes_caminho];  // Retorna o caminho reverso e as direções
+    return null;
 }
+
 
 // Função q encontra a posição de uma estante no depósito com base no seu código
 function encontrarPosicaoEstantePorCodigo($codigo_estante, $deposito)
@@ -309,7 +283,7 @@ function imprimirDeposito($deposito, $robos)
 
 function moverRoboParaEstanteERetornar($robo, $estante, $deposito, $robos)
 {
-    list($rotaEstanteX, $direcoesEstanteX) = astar($deposito, $robo->getPosicao(), $estante);
+    list($rotaEstanteX, $direcoesEstanteX) = aprofundamentoIterativo($deposito, $robo->getPosicao(), $estante);
 
     if ($rotaEstanteX) {
         $direcaoAnterior = "Desconhecida";  // Inicialize a direção do primeiro movimento como "Desconhecida"
@@ -331,7 +305,7 @@ function moverRoboParaEstanteERetornar($robo, $estante, $deposito, $robos)
         }
 
         // Retornar à estante
-        list($rotaRetorno, $direcoesRetorno) = astar($deposito, $robo->getPosicao(), $estante);
+        list($rotaRetorno, $direcoesRetorno) = aprofundamentoIterativo($deposito, $robo->getPosicao(), $estante);
 
         for ($i = 0; $i < count($direcoesRetorno); $i++) {
             $direcaoAtual = $direcoesRetorno[$i];
@@ -381,26 +355,21 @@ $robos = array(
     new Robo("R5", array(12, 4))
 );
 
-/* while (true) {
-    $codigoEstanteDesejada = readline("Digite o código da estante desejada (ou -1 para sair): ");
+if ($codigoEstanteDesejada == -1) {
+    echo "Loop encerrado a pedido do usuário.";
+}
 
-    if ($codigoEstanteDesejada == -1) {
-        echo "Loop encerrado a pedido do usuário.";
-        break;
-    }
+$posicaoEstante = encontrarPosicaoEstantePorCodigo($codigoEstanteDesejada, $deposito);
 
-    $posicaoEstante = encontrarPosicaoEstantePorCodigo($codigoEstanteDesejada, $deposito);
+if ($posicaoEstante !== null) {
+    $estanteDesejada = $posicaoEstante;
+    $roboDisponivel = encontrarRoboMaisProximo($robos, $estanteDesejada);
 
-    if ($posicaoEstante !== null) {
-        $estanteDesejada = $posicaoEstante;
-        $roboDisponivel = encontrarRoboMaisProximo($robos, $estanteDesejada);
-
-        if ($roboDisponivel !== null) {
-            moverRoboParaEstanteERetornar($roboDisponivel, $estanteDesejada, $deposito, $robos);
-        } else {
-            echo "Nenhum robô disponível para a estante desejada.";
-        }
+    if ($roboDisponivel !== null) {
+        moverRoboParaEstanteERetornar($roboDisponivel, $estanteDesejada, $deposito, $robos);
     } else {
-        echo "Estante com código $codigoEstanteDesejada não encontrada no depósito.";
+        echo "Nenhum robô disponível para a estante desejada.";
     }
-}*/
+} else {
+    echo "Estante com código $codigoEstanteDesejada não encontrada no depósito.";
+}
